@@ -50,6 +50,7 @@ bin/kc.sh start
 
 📄 Directory Structure | 项目结构
 
+```
 kc-choose-method-spi/
 ├── pom.xml
 └── src/
@@ -60,6 +61,7 @@ kc-choose-method-spi/
         └── resources/
             └── META-INF/services/
                 └── org.keycloak.authentication.AuthenticatorFactory
+```
 
 📢 Note | 注意事项
 This plugin must be used together with customized authentication flows in Keycloak.
