@@ -87,14 +87,17 @@ flowchart TD
 ## 👀 Screenshots | 界面演示
 
 - 验证方式选择页 (Choose Method Page)
+
 ![image](https://github.com/user-attachments/assets/9b5053f4-ffcb-4097-aa41-bb47d2322bc6)
 
   
 - 短信验证码输入 (SMS Verification Page)
+  
 ![image](https://github.com/user-attachments/assets/58213ba2-0833-43fc-aef7-6fce21303f71)
 
 
 - OTP码输入页 (OTP Verification Page)
+  
 ![image](https://github.com/user-attachments/assets/2d7b2e4b-e1ad-4006-86e3-c29e0d799ab7)
 
 
