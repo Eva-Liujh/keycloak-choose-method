@@ -1,94 +1,110 @@
-# keycloak-choose-method
+# Keycloak Custom Verification Plugins
 
-Keycloak plugin for choosing verification method between SMS and OTP.
+Keycloak plugins for choosing verification methods (SMS / OTP) and dynamically controlling authentication flows.
+
+Keycloak自定义插件，用于验证方法选择（短信/SMS 和 OTP），实现高度自定义的认证流程控制。
 
 ## 📚 Project Introduction | 项目简介
 
-kc-choose-method-spi is a custom Keycloak Authenticator SPI plugin, which allows users to select a verification method (e.g., SMS or OTP) during the password reset or authentication process.
+This project contains four integrated Keycloak plugins:
 
-kc-choose-method-spi 是一个自定义的 Keycloak Authenticator SPI 插件，用于在密码重置或认证流程中，让用户自主选择验证码验证方式（如短信验证或 OTP 动态令牌验证）。
+该项目包含四个相关联的Keycloak插件：
+
+| Plugin Name                | Description (EN)                           | 描述 (中文)                                     |
+| -------------------------- | ------------------------------------------ | ----------------------------------------------- |
+| kc-choose-method-spi       | Allow users to choose between SMS and OTP. | 弹出验证方式选择页面，可选择 SMS 或 OTP         |
+| kc-choose-recovery-method  | Store user’s selection into authNote.      | 将用户选择给存入 authNote，为后续分支控制做准备 |
+| auth-note-condition        | Conditional execution based on authNote.   | 根据 authNote 值判断是否执行子流程              |
+| keycloak-sms-authenticator | Handle SMS code sending and verification.  | 发送短信验证码并进行校验                        |
 
 ## 🚀 Features | 功能特性
 
-Display a method selection page during authentication
-
-Allow users to choose SMS or OTP
-
-Seamlessly integrate into Keycloak authentication flows
-
-Fully compatible with Keycloak 26.0.5
-
-在认证流程中展示验证码方式选择页面
-
-支持用户选择 短信验证 或 OTP动态令牌
-
-可无缝集成到 Keycloak 认证流程
-
-完全兼容 Keycloak 26.0.5 版本
+- Support SMS and OTP two-factor authentication.
+- Allow dynamic user selection.
+- Fully integrated with Keycloak 26.0.5 authentication flow.
+- Easy to extend and maintain.
+- 支持短信和动态两种验证方式
+- 允许用户自选验证方法
+- 完美集成到 Keycloak 26.0.5 认证流程
+- 易于扩展和维护
 
 ## 🛠️ Build & Deployment | 构建与部署
 
-### Build | 构建
+### Build All Plugins | 构建所有插件
 
 ```
-cd kc-choose-method-spi
+# For each plugin
 mvn clean package
 ```
 
-After successful build, you will get a JAR file under target/ directory.
+- The JAR files will be located in each plugin's `/target/` directory.
+- 构建后，JAR 文件生成在各自 plugin 项目的 `/target/` 目录下，例如：
 
-构建成功后，JAR 文件会生成在 target/ 目录下。
+```
+- auth-note-condition-1.0.0.jar
+- kc-choose-method-spi-1.0.0.jar
+- kc-choose-recovery-method-1.0.0.jar
+- keycloak-sms-authenticator-1.0.0-SNAPSHOT-jar-with-dependencies.jar
+```
 
 ### Deployment | 部署
 
-1. Copy the generated JAR to Keycloak's providers/ directory.
-2. Restart Keycloak service.
-
 ```
-cp target/kc-choose-method-spi-1.0.0.jar /app/keycloak/providers/
+cp *.jar /app/keycloak/providers/
 cd /app/keycloak/
-bin/kc.sh build
-bin/kc.sh start
+./bin/kc.sh build
+./bin/kc.sh start
 ```
 
-将构建后的 JAR 文件复制到 Keycloak 的 providers/ 目录
+Copy all built jar files into Keycloak `providers/`, rebuild, and restart.
 
-执行 build 命令重新编译 Keycloak，最后重新启动
+将所有构建好的JAR文件复制到 Keycloak `providers/`，执行 build，重启Keycloak。
 
-## 🔥 How It Works | 使用流程
-
-在自定义认证流程中添加 Choose Method V2 和 Choose Recovery Method 两个执行器。
-
-用户在选择页面点击按钮，选择 "SMS" 或 "OTP"。
-
-认证流程根据用户选择动态跳转到对应子流程（短信验证码验证流程或 OTP 验证流程）。
-
-在自定义认证流程中配置 Choose Method V2 和 Choose Recovery Method 两个节点。
-
-用户在页面上选择 "短信验证" 或 "动态令牌验证"。
-
-流程根据用户选择自动跳转至对应子流程执行验证。
-
-## 📄 Directory Structure | 项目结构
+## 🌈 Flow Diagram | 流程图
 
 ```
-kc-choose-method-spi/
-├── pom.xml
-└── src/
-    └── main/
-        ├── java/com/example/choosemethod/
-        │   ├── ChooseMethodAuthenticator.java
-        │   └── ChooseMethodAuthenticatorFactory.java
-        └── resources/
-            └── META-INF/services/
-                └── org.keycloak.authentication.AuthenticatorFactory
+flowchart TD
+    A(Choose Method V2) --> B(Choose Recovery Method)
+    B --> C{authSelection}
+    C -->|SMS| D(SMS Flow)
+    C -->|OTP| E(2FA Flow)
+    D --> F(Send SMS & Verify)
+    E --> G(OTP Form Verify)
 ```
 
-## 📢 Note | 注意事项
+## 🖋️ Configuration Steps | 配置流程
 
-This plugin must be used together with customized authentication flows in Keycloak.
+1. **Create custom authentication flow**: `reset-credentials-custom`
+2. **Add executions**:
+   - Choose Method V2 (kc-choose-method-spi)
+   - Choose Recovery Method (kc-choose-recovery-method)
+   - Verification Flow (subflow, REQUIRED)
+3. **Under Verification Flow**, add two alternative subflows:
+   - SMS-Flow (ALTERNATIVE)
+     - Add Execution: Execution Based On Auth Condition (auth-note-condition)
+     - Add Execution: SMS Authenticator (keycloak-sms-authenticator)
+   - 2FA-Flow (ALTERNATIVE)
+     - Add Execution: Execution Based On Auth Condition (auth-note-condition)
+     - Add Execution: Conditional OTP Form
 
-The plugin is compatible with Keycloak Quarkus distribution (e.g., 17+ versions).
+## 👀 Screenshots | 界面演示
 
-插件需要配合 Keycloak 自定义认证流程使用。
-本插件适用于 Keycloak 的 Quarkus 版本（17及以上版本）。
+- 验证方式选择页 (Choose Method Page)
+- 短信验证码输入 (SMS Verification Page)
+- OTP码输入页 (OTP Verification Page)
+
+## 📊 Dependencies | 依赖关系
+
+| Plugin                     | Depends On                | 依赖           |
+| -------------------------- | ------------------------- | -------------- |
+| kc-choose-method-spi       | standalone                | 单独使用       |
+| kc-choose-recovery-method  | kc-choose-method-spi      | 需要先选择方法 |
+| auth-note-condition        | kc-choose-recovery-method | 根据选择判断   |
+| keycloak-sms-authenticator | auth-note-condition       | 通过条件执行   |
+
+## 📢 Contact & Support | 联系与支持
+
+Feel free to open an issue or submit a pull request if you have any questions or improvements!
+
+如有任何疑问或优化建议，欢迎提 Issue 或 Pull Request！
+
