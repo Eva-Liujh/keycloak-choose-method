@@ -50,8 +50,8 @@ mvn clean package
 ### Deployment | 部署
 
 ```
-cp *.jar /app/keycloak/providers/
-cd /app/keycloak/
+cp *.jar $KEYCLOAK_HOME/providers/
+cd $KEYCLOAK_HOME
 ./bin/kc.sh build
 ./bin/kc.sh start
 ```
@@ -73,25 +73,49 @@ flowchart TD
 ```
 
 ## 🖋️ Configuration Steps | 配置流程
+    
+![Uploading image.png…]()
 
-1. **Create custom authentication flow**: `reset-credentials-custom`
-2. **Add executions**:
-   - Choose Method V2 (kc-choose-method-spi)
-   - Choose Recovery Method (kc-choose-recovery-method)
-   - Verification Flow (subflow, REQUIRED)
-3. **Under Verification Flow**, add two alternative subflows:
-   - SMS-Flow (ALTERNATIVE)
-     - Add Execution: Execution Based On Auth Condition (auth-note-condition)
-     - Add Execution: SMS Authenticator (keycloak-sms-authenticator)
-   - 2FA-Flow (ALTERNATIVE)
-     - Add Execution: Execution Based On Auth Condition (auth-note-condition)
-     - Add Execution: Conditional OTP Form
 
 ## 👀 Screenshots | 界面演示
 
 - 验证方式选择页 (Choose Method Page)
+![image](https://github.com/user-attachments/assets/9b5053f4-ffcb-4097-aa41-bb47d2322bc6)
+
+  
 - 短信验证码输入 (SMS Verification Page)
+![image](https://github.com/user-attachments/assets/58213ba2-0833-43fc-aef7-6fce21303f71)
+
+
 - OTP码输入页 (OTP Verification Page)
+![image](https://github.com/user-attachments/assets/2d7b2e4b-e1ad-4006-86e3-c29e0d799ab7)
+
+## 📄 Pages | 页面说明
+
+### 1. choose-method.ftl
+
+- Purpose: Allow user to select SMS or OTP method.
+- Associated Plugin: **kc-choose-method-spi**
+- Displayed after "Choose Method V2" execution.
+- 作用：展示短信验证 / 动态令牌选择按钮。
+- 关联插件：**kc-choose-method-spi**
+- 出现位置：Choose Method V2 执行后。
+
+### 2. sms.ftl (SMS Authentication Page)
+
+- Purpose: Allow user to enter received SMS verification code.
+- Associated Plugin: **keycloak-sms-authenticator**
+- Displayed after "SMS-Flow" triggers.
+- 作用：输入收到的短信验证码进行验证。
+- 关联插件：**keycloak-sms-authenticator**
+- 出现位置：用户选择短信验证后，跳转到此页输入验证码。
+
+## 🔗 How Pages Bind to Plugins | 页面与插件绑定关系
+
+| Page              | Plugin                     | Purpose                       | 中文作用                    |
+| ----------------- | -------------------------- | ----------------------------- | --------------------------- |
+| choose-method.ftl | kc-choose-method-spi       | Allow users to select method  | 让用户选择短信或OTP验证方式 |
+| sms.ftl           | keycloak-sms-authenticator | SMS code input and validation | 输入并验证短信验证码        |
 
 ## 📊 Dependencies | 依赖关系
 
