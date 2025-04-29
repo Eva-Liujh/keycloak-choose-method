@@ -14,7 +14,7 @@ import java.util.List;
 
 public class ExecutionBasedOnAuthConditionFactory implements AuthenticatorFactory, ConfigurableAuthenticatorFactory {
 
-    public static final String ID = "execution-based-on-auth";  // ✅ 修改了这里
+    public static final String ID = "execution-based-on-auth";  
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
     static {
@@ -42,7 +42,7 @@ public class ExecutionBasedOnAuthConditionFactory implements AuthenticatorFactor
 
     @Override
     public String getId() {
-        return ID;  // ✅ 修改返回一致的 ID
+        return ID; 
     }
 
     @Override
